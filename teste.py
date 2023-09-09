@@ -1,16 +1,3 @@
-from flask import Flask, request, jsonify
-import sys
-import json
-import os
-import platform
-
-# check os
-if platform.system() == 'Windows':
-    # get save folder path with system variables and so on
-    save_path = 'C:\\Users\\Usuario\\OneDrive\\Documentos\\Icewind Dale - Enhanced Edition\\save\\000000001-Quick-Save'
-    files = os.listdir(save_path)
-
-
 GAM_GAME_TIME = "Elapsed game time (seconds)"
 GAM_SELECTED_FORMATION = "Selected formation"
 GAM_FORMATION_BUTTON_FMT = "Formation button %d"
@@ -718,46 +705,3 @@ def party():
         cre = read_creature_cre_info()
         party.append({ 'member': pt_member,
                        'creature': cre })
-    return party
-
-class BytesEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, bytes):
-            try:
-                return obj.decode()
-            except:
-                return int.from_bytes(obj, byteorder="little")
-                pass
-        return super().default(obj)
-
-group = json.dumps(party(), cls=BytesEncoder)
-# build json
-response_json = {
-    'characters': group
-}
-
-
-# serve it
-app = Flask(__name__)
-@app.route('/',  methods=["GET", "OPTIONS"])
-def characters():
-    if request.method == 'OPTIONS':
-        return _build_cors_preflight_response()
-    else:
-        data = jsonify(response_json)
-        response = app.make_response(data)
-        response.charset = "utf-8"
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        response.headers.add('Content-type', 'application/json')
-        response.headers.add("Access-Control-Allow-Origin",
-                             "https://localhost:8080")
-        return response
-
-def _build_cors_preflight_response():
-    response = app.make_response({})
-    response.access_control_allow_credentials = True
-    response.headers.add("Access-Control-Allow-Origin",
-                         "https://localhost:8080")
-    response.headers.add('Access-Control-Allow-Headers', "content-type")
-    response.headers.add('Access-Control-Allow-Methods', "*")
-    return response
